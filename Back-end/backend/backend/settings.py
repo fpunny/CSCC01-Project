@@ -38,7 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'DataFetching',
+    'rest_framework',
 ]
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -85,6 +94,14 @@ DATABASES = {
         'USER': 'postgres',
         'PASSWORD': 'ljl971117',
         'HOST': 'localhost',
+        'PORT': '5432'
+    },
+    'client_data_online': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'uwgrunsx',
+        'USER': 'uwgrunsx',
+        'PASSWORD': 'pqrXrdhuKE1w2jauWX9vgli5wu2XRs73',
+        'HOST': 'pellefant.db.elephantsql.com',
         'PORT': '5432'
     }
 }
