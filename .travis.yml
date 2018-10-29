@@ -7,8 +7,6 @@ matrix:
         - cd ./Front-end
       cache:
         - npm
-      install:
-        - npm ci
       script:
         - npm run build
     - language: python
@@ -22,9 +20,13 @@ matrix:
         - pip install django --quiet
       script:
         - python manage.py test
-      after_success:
-        - cd ..
-        - git subtree push --prefix Back-end origin server
+      deploy:
+        provider: heroku
+        api_key:
+          secure:
+            - "$HEROKU"
+        app:
+          - cscc01f18
 after_success:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
   - chmod +x send.sh
