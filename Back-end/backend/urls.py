@@ -22,6 +22,9 @@ urlpatterns = [
     path('DataFetching/', include('DataFetching.urls')),
     path('admin/', admin.site.urls),
     path(r'register', account.registerAccount),
+    path(r'editAccount', account.editAccount),
+    path(r'deleteAccount', account.deleteAccount),
+    path(r'login', account.login),
     path(r'', view.newLineHuh),
     path(r'api-auth/', include('rest_framework.urls')),
 ]

@@ -1,3 +1,5 @@
 # Python
 .pyc
 .json
+*/__pycache__/*
+*/Front-end/*
