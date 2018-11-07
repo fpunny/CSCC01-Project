@@ -6,32 +6,12 @@ import { Authentication } from '../util';
 const auth = Authentication.getInstance();
 class _Login extends Component {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      username: {
-        text: '',
-        valid: null
-      },
-      password: {
-        text: '',
-        valid: null
-      }
-    }
+  state = {
+    username: { text: '', valid: null, check: this.checkEmail },
+    password: { text: '', valid: null, check: this.checkPassword }
   }
 
-  getQuery = search => {
-    const res = {};
-    if (search && search !== "") {
-      search.slice(1).split("&").forEach(el => {
-        const item = el.split("=");
-        res[item[0]] = item[1];
-      });
-    }
-    return res;
-  }
-
-  authenticate = el => {
+  authenticate = async el => {
     el.preventDefault();
     const { username, password } = this.state; 
     if (username.valid === true && password.valid === true){
@@ -48,25 +28,12 @@ class _Login extends Component {
     } 
   }
 
-  update = ({ target }) => {
-    const name = target.name;
-    const text = target.value;
-    let valid = null;
-    switch(name) {
-      case "username":
-        valid = auth.isValidUsername(text) || true;
-        break;
-      case "password":
-        valid = auth.isValidPassForUser(text) || true;
-        break;
-      default:
-        break;
-    }
-    this.setState({
-      [name]: {
-        text, valid
-      }
-    });
+  checkEmail = async () => {
+
+  }
+
+  checkPassword = async () => {
+
   }
 
   validClass = ({ text, valid }) => (
@@ -78,16 +45,16 @@ class _Login extends Component {
     return (
       <main className="login">
         <form className="login__form" onSubmit={this.authenticate} >
-          <div className="login__app-name">
+          <h1 className="login__app-name">
               GreenCare
-          </div>
+          </h1>
           <div className={`login__input-group${this.validClass(username)}`}>
             <i className="fas fa-user login__icon"></i>
             <input
-              type="text"
+              type="email"
               name="username"
               placeholder="Username"
-              onChange={this.update}
+              onChange={username.check}
               className="login__input"
             />
           </div>
@@ -97,7 +64,7 @@ class _Login extends Component {
             type="password"
             name="password"
             placeholder="Password"
-            onChange={this.update}
+            onChange={password.check}
             className="login__input"
             />
           </div>
