@@ -21,18 +21,22 @@ class _Authentication {
     @params email and password of user
     @returns the token on sucess, an error otherwise
   */
-  login = (email, password) => {
-    if (email === "bob" && password === "bob") {
-      // TODO: Get the token ffrom backend
-      const token = {
-        token: "sadsadsadsadsa",
-        expires: new Date()
-      };
-      localStorage.setItem("token", JSON.stringify(this._token));
-      return token
-    }
-    return null
-  }
+  login = (email, password) => new Promise((resolve, reject) => {
+    fetch(
+      process.env.REACT_APP_SERVER + '/login', {
+        method: "POST",
+        headers: {"Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      }).then(dat => dat.json()).then(({ data, err }) => {
+        if (!err){
+          localStorage.setItem('token', data);
+          _token = data;
+          resolve(data);
+          return
+        }
+        reject(err);
+      });
+    });
 
   /*
     Checks if the username that the user enters at login
@@ -63,10 +67,24 @@ class _Authentication {
   /*
     Logs the user out
   */
-  logout = () => {
-    localStorage.removeItem("token");
-    _token = null;
-  }
+  logout = () => new Promise((resolve, reject) => {
+    const token = localStorage["token"];
+    fetch(
+      process.env.REACT_APP_SERVER + '/logout', {
+        method: "POST",
+        headers: {"Content-Type": "application/json" },
+        body: JSON.stringify({ token })
+    }).then(dat => dat.json()).then(({ data, err }) => {
+      console.log(data);
+      console.log(err);
+      if (!err) {
+        console.log("logged out");
+        console.log(data);
+        resolve(data);
+      }
+      reject(err);
+    });
+  });
 
   /*
     Checkes the Authentication of the user
