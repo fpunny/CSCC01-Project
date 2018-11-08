@@ -6,38 +6,57 @@ import { Authentication } from '../util';
 const auth = Authentication.getInstance();
 class _Login extends Component {
 
+  checkEmail = text => (
+    text.match(/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/)
+  )
+
+  checkPassword = text => (
+    text.length >= 4
+  )
+
   state = {
     username: { text: '', valid: null, check: this.checkEmail },
     password: { text: '', valid: null, check: this.checkPassword }
   }
 
+  getQuery = search => {
+    const res = {};
+    if (search && search !== "") {
+      search.slice(1).split("&").forEach(el => {
+        const item = el.split("=");
+        res[item[0]] = item[1];
+      });
+    }
+    return res;
+  }
+
   authenticate = async el => {
     el.preventDefault();
     const { username, password } = this.state; 
-    if (username.valid === true && password.valid === true){
-      auth.login(username.text, password.text).then(() => {
-        const search = this.getQuery(window.location.search);
-        if (search.redirect) {
-          this.props.history.push(search.redirect);
-        } else {
-          this.props.history.push("/app/upload");
-        }
-      }).catch(err => {
+    if (username.valid && password.valid){
+      const { err } = await auth.login(username.text, password.text);
+      if (err) {
         console.log(err);
-      });
+        return
+      }
+
+      const { redirect } = this.getQuery(window.location.search);
+      this.props.history.push(redirect? redirect: '/app/upload');
     } 
   }
 
-  checkEmail = async () => {
-
-  }
-
-  checkPassword = async () => {
-
+  update = async ({ currentTarget: { name, value } }) => {
+    this.setState(state => ({
+      [name]: {
+        ...state[name],
+        valid: value === ''? null: state[name].check(value),
+        text: value
+      },
+    }))
   }
 
   validClass = ({ text, valid }) => (
-    text === ""? "": ` login__input-group--${ valid? "": "in" }valid`
+    text === ''? '': ` login__input-group--${ valid? "": "in" }valid`
   )
 
   render() {
@@ -54,7 +73,7 @@ class _Login extends Component {
               type="email"
               name="username"
               placeholder="Username"
-              onChange={username.check}
+              onChange={this.update}
               className="login__input"
             />
           </div>
@@ -64,7 +83,7 @@ class _Login extends Component {
             type="password"
             name="password"
             placeholder="Password"
-            onChange={password.check}
+            onChange={this.update}
             className="login__input"
             />
           </div>

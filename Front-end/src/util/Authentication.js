@@ -1,4 +1,4 @@
-import { server } from '.';
+import { request } from '.';
 
 // Private variables
 let _token = null;
@@ -24,12 +24,19 @@ class _Authentication {
     @returns the token on sucess, an error otherwise
   */
   login = async (email, password) => {
-    const data = await server(
-      '/login',
-      'POST',
-      JSON.stringify({ email, password })
-    );
+    let res;
+    try {
+      res = await request(
+        '/login',
+        'POST',
+        null,
+        JSON.stringify({ email, password })
+      );
+    } catch (err) {
+      return err;
+    }
 
+    const { data } = res;
     _user = data;
     _token = data.token;
     localStorage.setItem('token', _token);
@@ -41,10 +48,15 @@ class _Authentication {
     Logs the user out
   */
   logout = async () => {
-    const data = await server(
-      '/logout',
-      'POST'
-    );
+    let data;
+    try {
+      data = await request(
+        '/logout',
+        'POST'
+      );
+    } catch (err) {
+      return err;
+    }
 
     _token = null;
     _user = null;
