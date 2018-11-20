@@ -15,7 +15,7 @@ export const submitController = {
     const { user: { _org } } = req;
     const db = await database.connect();
     const data = await db.collection('submissions').find(
-      { _org }, { _id: 1, _temp: 1, _org: 1, time: 1 }
+      { _org }, { _id: 1, _temp: 1, date: 1, submitted: 1 }
     ).toArray();
 
     if (data) {
@@ -129,7 +129,7 @@ export const submitController = {
     );
 
     if (ok && value) {
-      res.json({ status: 'success', data: value._id });
+      res.json({ status: 'success', data: _temp });
     } else {
       res.status(401).json({ status: 'error', err: 'Submission does not exist' });
     }

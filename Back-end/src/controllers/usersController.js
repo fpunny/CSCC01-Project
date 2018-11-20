@@ -1,18 +1,10 @@
 import { database, getHash, getObjectId } from '../util';
 
 const getUsers = async (db, match) => (
-  db.collection('users').aggregate([
-    { $match: match },
-    {
-      $lookup: { // Graft organization information onto item
-        from: 'organizations',
-        localField: '_org',
-        foreignField: '_id',
-        as: 'org'
-      }
-    },
-    { $project: { _org: 0, password: 0, token: 0 } } // Hide _org, token and password
-  ]).toArray()
+  db.collection('users').find(
+    match,
+    { password: 0, token: 0 }
+  ).toArray()
 );
 
 const validUser = ({ firstname, lastname, email, admin, password }) => {
@@ -62,13 +54,14 @@ export const UsersController = {
   },
 
   getMe: async (req, res) => {
-    const { _id } = req.user;
-    const db = await database.connect();
-    const users = await db.collection('users').findOne({ _id }, { _org: 0, password: 0, token: 0 });
+    const { user, sudo } = req;
 
     // Return all the users
-    res.json({ status: "success", data: users });
-    db.close();
+    delete user._org;
+    delete user.password;
+    delete user.token;
+    user._sys = sudo;
+    res.json({ status: "success", data: user });
   },
 
   postMe: async (req, res) => {
@@ -194,8 +187,18 @@ export const UsersController = {
 
     // Get users of this organization
     const db = await database.connect();
-    const users = await getUsers(db, { _id, _org });
-    res.json({ status: "success", data: users[0] });
+    const data = await db.collection('users').findOne(
+      { _org, _id },
+      { password: 0, token: 0 }
+    );
+    
+    const { _sys } = await db.collection('organizations').findOne(
+      { _id: _org },
+      { _sys: 1 }
+    );
+    
+    data._sys = _sys;
+    res.json({ status: "success", data });
     db.close();
   },
 
@@ -220,29 +223,24 @@ export const UsersController = {
       return
     }
 
-    // Check if data is valid
-    const { isValid, err } = validUser(body);
-    if (isValid) {
-
-      // Find user and update token
-      const db = await database.connect();
-      const { value, ok } = await db.collection('users').findOneAndReplace(
-        { _id, _org },
-        { $set: { ...body, password: getHash(body.password) } },
-        { projection: { password: 0, token: 0 }, returnOriginal: false }
-      );
-
-      // Return OK and has value
-      if (ok && value) {
-        res.json({ status: 'success', data: { ...value } });
-      } else {
-        res.json({ status: 'error', data: "No such user exist in database" });
-      }
-      db.close();
-    } else {
-      // If data is invalid
-      res.status(403).json({ status: "error", err });
+    if (body.password) {
+      body.password = getHash(body.password);
     }
+    // Find user and update token
+    const db = await database.connect();
+    const { value, ok } = await db.collection('users').findOneAndReplace(
+      { _id, _org },
+      { $set: body },
+      { projection: { password: 0, token: 0 }, returnOriginal: false }
+    );
+
+    // Return OK and has value
+    if (ok && value) {
+      res.json({ status: 'success', data: value });
+    } else {
+      res.json({ status: 'error', data: "No such user exist in database" });
+    }
+    db.close();
   },
 
   deleteUser: async (req, res) => {
