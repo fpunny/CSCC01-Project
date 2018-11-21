@@ -8,12 +8,9 @@ router.route('/')
   .get(reportsController.getReports)
 ;
 
-router.route('/:lid')
-  .post(reportsController.postReport)
-;
-
 router.route('/:rid')
   .get(reportsController.getReport)
+  .post(reportsController.postReport)
   .delete(reportsController.deleteReport)
 ;
 
