@@ -106,8 +106,7 @@ export const layoutsController = {
       
       if (sudo) {
         const db = await database.connect();
-        const { value, ok } = await db.collection('layouts')
-          .findOneAndDelete({ _id });
+        const { value, ok } = await db.collection('layouts').findOneAndDelete({ _id });
   
         if (value && ok) {
           res.json({ status: 'success', data: value._id });
